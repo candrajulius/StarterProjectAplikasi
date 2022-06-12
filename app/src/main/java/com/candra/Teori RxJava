@@ -1,0 +1,115 @@
+Observable.just("1", "2", "3", "4", "5", "6")
+       .map { string -> string.toInt() }
+       .filter { number -> number%2 == 1 }
+       .doOnNext { println("$it adalah bilangan ganjil") }
+       .count()
+       .subscribe { result -> println("Total bilangan ganjil : $result") }
+
+Observable : adalah jenis tipe objek yang digunakan.
+
+just : operator untuk membuat item menjadi Observable item.
+
+map, filter, count : operator untuk transformasi data, sudah dibahas sebelumnya.
+
+doOnNext : operator untuk melihat dan melakukan aksi lain di tengah-tengah proses Observable, sebagai contoh di sini melihat hasil dari filter dengan menggunakan log.
+
+subscribe (wajib ada) : operator untuk berlangganan dan siap menerima data.
+
+Tipe Observables
+Ada 5 macam tipe Observables pada RxJava, yaitu:
+Observable : untuk emit data stream tanpa batas. Digunakan untuk proses yang cepat seperti interaksi UI.
+Flowable : untuk emit data stream tanpa batas dengan tambahan back pressure strategy. Digunakan untuk proses yang lama, seperti mengambil data dari API atau database yang berubah-ubah dalam beberapa detik, seperti jumlah Like & Comment.
+Single : untuk emit satu data saja. Digunakan untuk mengambil data yang tidak berubah-ubah dan cukup sekali saja.
+Maybe : untuk emit satu atau tanpa data. Seperti Single, hanya ada opsi untuk emit 0 item. Contohnya seperti mengupdate token, jika token belum expire, maka tidak perlu mengupdate data (emit 0 item).
+Completable : untuk melihat hasil sudah selesai atau belum, tanpa emit data. Contohnya untuk menyimpan data ke database yang hanya membutuhkan respons berhasil atau tidak.
+
+Backpressure adalah keadaaan di mana Publisher memberikan data yang berlebih sehingga Subscriber tidak dapat menampungnya.
+BackpressureStrategy.BUFFER : Proses data yang bisa diterima dan tunggu data yang lainnya di antrian.
+BackpressureStrategy.DROP : Proses data yang bisa diterima dan hiraukan data yang lainnya
+BackpressureStrategy.LATEST : Proses data yang bisa diterima, tapi simpan elemen terakhir pada cache
+BackpressureStrategy.MISSING : Proses tanpa menggunakan Backpressure Strategy, sehingga Anda harus membuat custom sendiri
+BackpressureStrategy.ERROR : Beritahukan eror MissingBackpressureException jika proses tidak kuat.
+
+Multi-Threading dengan Schedulers
+Seperti yang dijelaskan di awal modul, kita memerlukan multi-threading untuk membuat proses yang tidak memblok UI alias freeze. Dengan menggunakan ReactiveX, Anda dapat berpindah antar thread dengan mudah dengan memanfaatkan Scheduler dan bantuan operator observeOn/subscribeOn.
+subscribeOn : untuk mendefinisikan proses mengirim data dilakukan di mana.
+observeOn : untuk mendefinisikan proses menerima data dilakukan di mana.
+
+Untuk menentukan thread yang digunakan, Anda bisa menggunakan beberapa pilihan Schedulers berikut:
+Schedulers.io : untuk melakukan proses di I/O Thread seperti memanggil api dan menulis database.
+Schedulers.computation : untuk melakukan proses dengan kebutuhan CPU yang tinggi seperti convert bitmap atau compressing.
+Schedulers.newThread : untuk membuat thread baru untuk setiap unit proses.
+Schedulers.single : berguna jika Anda memiliki beberapa proses yang berasal dari tempat berbeda dan ingin menggabungkannya.
+Schedulers.from(...) : untuk membuat custom scheduler sendiri dengan bantuan Executor.
+AndroidSchedulers.mainThread() : untuk menerima hasil proses di Main Thread Android. Di sinilah tempat library RxAndroid berperan.
+Pada kode di atas proses emitting dilakukan di Thread IO dan menampilkan hasil pada Main Thread. Seperti itulah biasanya proses multi-threading untuk mengambil data dari server dilakukan.
+
+Disposable & CompositeDisposable
+Tahukah Anda, ketika Observer melakukan subscribe, aplikasi akan terus menerus mengamati dan menunggu response dari publisher. Nah, andaikan Anda sudah mendapatkan data yang diinginkan dan tahu tidak ada data yang dikirimkan lagi, maka sebaiknya Anda perlu menghapus observer atau melakukan unsubscribe. Selain itu bayangkan jika Anda berpindah ke Activity lain. Apa yang akan terjadi jika tidak dihapus? Aplikasi akan terus menerus melakukan request. Data stream tersebut pun akan menjadi sampah dan menumpuk di dalam memori. Inilah yang disebut dengan memory leak.
+Lalu bagaimana mencegahnya? Anda dapat membuat variabel disposable dan menghapusnya ketika keluar dari aplikasi atau sudah tidak dibutuhkan lagi. Jika ada banyak proses subscribing, Anda dapat mengumpulkannya di CompositeDisposable baru menghapusnya.
+Setelah menambahkan ke dalam CompositeDisposable, ada dua cara untuk menghapusnya, yaitu :
+clear : Jika Anda ingin menghapus dan menggunakannya lagi.
+dispose : Jika Anda ingin menghapus dan tidak menggunakannya kembali, fungsi ini akan memberikan flag isDispose = true.
+
+Subject
+Contoh yang sudah kita pelajari di atas menunjukkan bagaimana cara membuat Observer baik satuan maupun Array secara langsung sekaligus. Lalu bagaimana jika Anda ingin meng-emit data satu per satu dari luar? Jawabannya yaitu dengan menggunakan Subject. Apabila Observable merupakan contoh dari cold stream, maka Subject adalah contoh dari hot stream.
+Subject dapat berperan sebagai Observable maupun Observer. Subject dapat subscribe ke satu atau lebih Observable karena perannya sebagai Observer. Namun ia juga bisa meng-emit data baru juga karena ia sebagai Observable.
+
+Publish Subject
+Digunakan jika Anda ingin membuat Object yang tidak peduli dengan emit data sebelumnya.
+Contoh:
+val source = PublishSubject.create<Int>()
+source.subscribe(getFirstObserver()) //Akan mengambil nilai 1, 2 dan onComplete
+source.onNext(1)
+source.onNext(2)
+source.subscribe(getSecondObserver()) //Akan mengambil nilai 3 dan onComplete
+source.onNext(3)
+source.onComplete()
+
+Behavior Subject
+Digunakan jika Anda ingin membuat Object yang peduli dengan emit data sebelumnya. Misalkan Anda adalah siswa yang terlambat masuk ke kelas.
+Contohnya:
+val source = BehaviorSubject.create<Int>()
+source.subscribe(getFirstObserver()) // Akan mengambil nilai 1 dan 2
+source.onNext(1)
+source.onNext(2)
+source.subscribe(getSecondObserver()) // Akan mengambil nilai 1, 2 dan 3
+source.onNext(3)
+source.onComplete()
+
+Replay Subject
+Digunakan jika Anda ingin membuat Object yang ingin mengetahui semua emit data, kapanpun waktunya.
+Contohnya:
+val source = ReplaySubject.create<Int>()
+source.subscribe(getFirstObserver()) // Akan mengambil nilai 1, 2 dan 3
+source.onNext(1)
+source.onNext(2)
+source.subscribe(getSecondObserver()) // Akan mengambil nilai 1, 2 dan 3
+source.onNext(3)
+source.onComplete()
+
+Async Subject
+Digunakan jika Anda ingin membuat Object yang ingin mengetahui emit terakhir.
+Contohnya:
+val source = AsyncSubject.create<Int>()
+source.subscribe(getFirstObserver()) // Akan mengambil nilai 3
+source.onNext(1)
+source.onNext(2)
+source.subscribe(getSecondObserver()) // Akan mengambil nilai 3
+source.onNext(3)
+source.onComplete()
+
+Continuations dengan Flatmap
+Salah satu fitur yang menarik jika Anda menggunakan Rx yaitu adanya fitur untuk continuation. Apa itu? Misalkan Anda memiliki sebuah proses yang mengharuskan proses lain selesai terlebih dahulu, Anda dapat memanfaatkan operator flatmap untuk meneruskan ke proses lainnya.
+Contohnya:
+service.apiCallA()
+    .flatMap(value -> service.apiCallB(value))
+    .flatMap(next -> service.apiCallC(next))
+Maka ketika proses apiCall selesai ia akan memanggil proses apiCallB dan selanjutnya apiCallC. Bagaimana jika Anda ingin memanggil apiCallC setelah mendapatkan value dari proses apiCallB? Anda cukup memindahkan operator flatmap seperti berikut:
+Contohnya:
+service.apiCallA()
+.flatMap(value ->
+    service.apiCallB(value)
+    .flatMap(next -> service.apiCallC(value, next))
+)
+

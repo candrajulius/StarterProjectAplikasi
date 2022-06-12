@@ -1,0 +1,47 @@
+Membuat Observable dengan RxBinding
+Contoh kode
+val emailStream = RxTextView.textChanges(binding.edEmail)
+    .skipInitialValue()
+    .map { email ->
+        !Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    }
+emailStream.subscribe {
+    showEmailExistAlert(it)
+}
+Anda menggunakan RxTextView.textChanges(binding.edEmail) untuk membaca setiap perubahan pada EditText dan mengubahnya menjadi data stream.
+skipInitialValue() untuk menghiraukan input awal. Hal ini bertujuan supaya aplikasi tidak langsung menampilkan eror pada saat pertama kali dijalankan.
+Jika format tidak valid maka ia akan mengembalikan nilai TRUE. Kemudian saat subscribe, kita memanggil fungsi showEmailExistAlert(it) untuk menampilkan peringatan jika hasilnya TRUE.
+
+it adalah variabel default pada lambda. Anda juga dapat mengubah variabel tersebut dengan cara:
+Contoh kode
+emailStream.subscribe { isValid ->
+   showEmailExistAlert(isValid)
+}
+
+Menggabungkan Observable dengan Merge
+Ada satu lagi operator yang belum dibahas yaitu operator merge pada validasi konfirmasi password:
+contoh kode
+val passwordConfirmationStream = Observable.merge(
+    RxTextView.textChanges(binding.edPassword)
+        .map { password ->
+            password.toString() != binding.edConfirmPassword.text.toString()
+        },
+    RxTextView.textChanges(binding.edConfirmPassword)
+        .map { confirmPassword ->
+            confirmPassword.toString() != binding.edPassword.text.toString()
+        }
+)
+Jika pada operator combineLatest kita menggabungkan dan mengubah data di dalamnya. Maka pada operator merge kita hanya menggabungkan datanya saja.
+
+Menggabungkan Observable dengan CombineLatest
+Lalu mengapa perlu dibuat variabel seperti emailStream, passwordStream, dll? Hal ini karena Anda memerlukan data stream tersebut untuk menentukan Button aktif atau tidak. Ingat bahwa Button aktif ketika semua validasi tidak menghasilkan eror.
+Contoh kode
+val invalidFieldsStream = Observable.combineLatest(
+   emailStream,
+   passwordStream,
+   passwordConfirmationStream,
+   Function3 { emailInvalid: Boolean, passwordInvalid: Boolean, passwordConfirmationInvalid: Boolean ->
+       !emailInvalid && !passwordInvalid && !passwordConfirmationInvalid
+   })
+Anda menggunakan operator combineLatest untuk menggabungkan ketiga data stream dan menghasilkan 1 output data stream baru.
+

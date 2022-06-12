@@ -15,7 +15,7 @@ object DataMapper {
                 name = it.name,
                 address = it.address,
                 latitude = it.latitude,
-                longitude = it.longitude,
+                longitude = it.longtitude,
                 like = it.like,
                 image = it.image,
                 isFavorite = false

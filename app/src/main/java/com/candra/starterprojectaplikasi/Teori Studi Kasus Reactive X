@@ -1,0 +1,43 @@
+Selanjutnya Anda bisa mendapatkan kembalian dalam bentuk Observable, dalam hal ini Flowable.
+Mengapa Flowable? Hal ini karena mengambil data dengan proses yang lama dari API.
+
+fun getAllTourism(): Flowable<ApiResponse<List<TourismResponse>>> {
+   val resultData = PublishSubject.create<ApiResponse<List<TourismResponse>>>()
+
+   // Get data from remote api
+   val client = apiService.getList()
+
+   client
+       .subscribeOn(Schedulers.computation())
+       .observeOn(AndroidSchedulers.mainThread())
+       .take(1)
+       .subscribe ({ response ->
+           val dataArray = response.places
+           resultData.onNext(if (dataArray.isNotEmpty()) ApiResponse.Success(dataArray) else ApiResponse.Empty)
+        }, { error ->
+           resultData.onNext(ApiResponse.Error(error.message.toString()))
+           Log.e("RemoteDataSource", error.toString())
+        })
+
+   return resultData.toFlowable(BackpressureStrategy.BUFFER)
+}
+ operator take(1) untuk mengambil data dari API sekali saja
+
+ Kemudian karena kita akan menampung data di dalam ApiResponse, maka di sini kita menggunakan PublishSubject
+ meng-emit setiap response menggunakan fungsi onNext
+ Kemudian untuk mengubah Subject menjadi Flowable kita menggunakan fungsi toFlowable
+ Backpressure strategy yang digunakan yaitu Buffer, hal ini karena kita ingin mengambil setiap data walaupun ter-delay.
+
+ Tipe yang digunakan yaitu Flowable untuk mengambil data dan Completable untuk memasukkan data. Mengapa Completable? Hal ini karena Anda tak memerlukan kembalian pada saat insert, cukup informasi apakah proses sudah selesai (complete) atau eror.
+@Query("SELECT * FROM tourism")
+   fun getAllTourism(): Flowable<List<TourismEntity>>
+
+   @Query("SELECT * FROM tourism where isFavorite = 1")
+   fun getFavoriteTourism(): Flowable<List<TourismEntity>>
+
+   @Insert(onConflict = OnConflictStrategy.REPLACE)
+   fun insertTourism(tourism: List<TourismEntity>): Completable
+
+ Convert Flowable Menjadi LiveData
+ val tourism = LiveDataReactiveStreams.fromPublisher(tourismUseCase.getAllTourism())
+ Untuk membuat LiveData dari data reactive stream, Anda perlu menambahkan library tambahan yaitu

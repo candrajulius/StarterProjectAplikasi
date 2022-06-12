@@ -3,7 +3,6 @@ package com.candra.starterprojectaplikasi.core.data
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
 import com.candra.starterprojectaplikasi.core.data.source.local.LocalDataSource
-import com.candra.starterprojectaplikasi.core.data.source.local.entity.TourismEntity
 import com.candra.starterprojectaplikasi.core.data.source.remote.RemoteDataSource
 import com.candra.starterprojectaplikasi.core.data.source.remote.network.ApiResponse
 import com.candra.starterprojectaplikasi.core.data.source.remote.response.TourismResponse
@@ -11,6 +10,10 @@ import com.candra.starterprojectaplikasi.core.domain.model.Tourism
 import com.candra.starterprojectaplikasi.core.domain.repository.ITourismRepository
 import com.candra.starterprojectaplikasi.core.utils.AppExecutors
 import com.candra.starterprojectaplikasi.core.utils.DataMapper
+import io.reactivex.Flowable
+import io.reactivex.Scheduler
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 
 class TourismRepository private constructor(
     private val remoteDataSource: RemoteDataSource,
@@ -32,34 +35,46 @@ class TourismRepository private constructor(
             }
     }
 
-   override fun getAllTourism(): LiveData<Resource<List<Tourism>>> =
-        object : NetworkBoundResource<List<Tourism>, List<TourismResponse>>(appExecutors) {
-            override fun loadFromDB(): LiveData<List<Tourism>> {
-                return Transformations.map(localDataSource.getAllTourism()){
+    override fun getAllTourism(): Flowable<Resource<List<Tourism>>> =
+        object : NetworkBoundResource<List<Tourism>, List<TourismResponse>>() {
+            override fun loadFromDB(): Flowable<List<Tourism>> {
+                return localDataSource.getAllTourism().map {
                     DataMapper.mapEntitiesToDomain(it)
                 }
             }
 
-            override fun shouldFetch(data: List<Tourism>?): Boolean =
-                data == null || data.isEmpty()
+            override fun shouldFetch(data: List<Tourism>?): Boolean {
+                return true
+            }
 
-            override fun createCall(): LiveData<ApiResponse<List<TourismResponse>>> =
-                remoteDataSource.getAllTourism()
+            override fun createCall(): Flowable<ApiResponse<List<TourismResponse>>> {
+                return remoteDataSource.getAllTourism()
+            }
 
             override fun saveCallResult(data: List<TourismResponse>) {
                 val tourismList = DataMapper.mapResponsesToEntities(data)
                 localDataSource.insertTourism(tourismList)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe()
             }
-        }.asLiveData()
+        }.asFlowable()
 
-   override fun getFavoriteTourism(): LiveData<List<Tourism>> {
-        return Transformations.map(localDataSource.getFavoriteTourism()){
+    override fun getFavoriteTourism(): Flowable<List<Tourism>> {
+        return localDataSource.getFavoriteTourism().map {
             DataMapper.mapEntitiesToDomain(it)
         }
     }
 
     override fun setFavoriteTourism(tourism: Tourism, state: Boolean) {
         val tourismEntity = DataMapper.mapDomainToEntity(tourism)
-        appExecutors.diskIO().execute { localDataSource.setFavoriteTourism(tourismEntity, state) }
+        appExecutors.diskIO().execute{localDataSource.setFavoriteTourism(tourismEntity,state)}
     }
+
+    // Kesimpulan
+    /*
+
+     */
+
+
 }
