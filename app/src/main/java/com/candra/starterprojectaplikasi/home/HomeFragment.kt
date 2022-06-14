@@ -12,14 +12,14 @@ import com.candra.starterprojectaplikasi.R
 import com.candra.starterprojectaplikasi.core.data.Resource
 import com.candra.starterprojectaplikasi.core.domain.model.Tourism
 import com.candra.starterprojectaplikasi.core.ui.TourismAdapter
-import com.candra.starterprojectaplikasi.core.ui.ViewModelFactory
 import com.candra.starterprojectaplikasi.databinding.FragmentHomeBinding
 import com.candra.starterprojectaplikasi.detail.DetailTourismActivity
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 @Suppress("UNCHECKED_CAST")
 class HomeFragment : Fragment() {
 
-    private lateinit var homeViewModel: HomeViewModel
+    private val homeViewModel: HomeViewModel by viewModel()
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
@@ -44,8 +44,8 @@ class HomeFragment : Fragment() {
                 startActivity(intent)
             }
 
-            val factory = ViewModelFactory.getInstance(requireActivity())
-            homeViewModel = ViewModelProvider(this, factory)[HomeViewModel::class.java]
+//            val factory = ViewModelFactory.getInstance(requireActivity())
+//            homeViewModel = ViewModelProvider(this, factory)[HomeViewModel::class.java]
 
             homeViewModel.tourism.observe(viewLifecycleOwner) { tourism ->
                 if (tourism != null) {
