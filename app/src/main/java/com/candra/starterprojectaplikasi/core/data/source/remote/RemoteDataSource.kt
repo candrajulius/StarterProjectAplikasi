@@ -1,45 +1,45 @@
 package com.candra.starterprojectaplikasi.core.data.source.remote
 
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import com.candra.starterprojectaplikasi.core.data.source.remote.network.ApiResponse
-import com.candra.starterprojectaplikasi.core.data.source.remote.response.TourismResponse
-import com.candra.starterprojectaplikasi.core.utils.JsonHelper
-import org.json.JSONException
 
-class RemoteDataSource private constructor(private val jsonHelper: JsonHelper) {
+import com.candra.starterprojectaplikasi.core.data.source.remote.network.ApiResponse
+import com.candra.starterprojectaplikasi.core.data.source.remote.network.ApiService
+import com.candra.starterprojectaplikasi.core.data.source.remote.response.TourismResponse
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+
+class RemoteDataSource private constructor(private val apiService: ApiService) {
     companion object {
         @Volatile
         private var instance: RemoteDataSource? = null
 
-        fun getInstance(helper: JsonHelper): RemoteDataSource =
+        fun getInstance(service: ApiService): RemoteDataSource =
             instance ?: synchronized(this) {
-                instance ?: RemoteDataSource(helper)
+                instance ?: RemoteDataSource(apiService = service)
             }
     }
 
-    fun getAllTourism(): LiveData<ApiResponse<List<TourismResponse>>> {
-        val resultData = MutableLiveData<ApiResponse<List<TourismResponse>>>()
-
+    fun getAllTourism(): Flow<ApiResponse<List<TourismResponse>>> {
         //get data from local json
-        val handler = Handler(Looper.getMainLooper())
-        handler.postDelayed({
+        return flow {
             try {
-                val dataArray = jsonHelper.loadData()
-                if (dataArray.isNotEmpty()) {
-                    resultData.value = ApiResponse.Success(dataArray)
-                } else {
-                    resultData.value = ApiResponse.Empty
+                val response = apiService.getList().places
+                response.let {
+                    if (it.isNotEmpty()){
+                        emit(ApiResponse.Success(it))
+                    }else{
+                        emit(ApiResponse.Empty)
+                    }
                 }
-            } catch (e: JSONException){
-                resultData.value = ApiResponse.Error(e.toString())
-                Log.e("RemoteDataSource", e.toString())
+            }catch (e: Exception){
+                emit(ApiResponse.Error(e.toString()))
             }
-        }, 2000)
-
-        return resultData
+        }.flowOn(Dispatchers.IO)
     }
 }
+/*
+Unutk membuat Flow, Disini kita menggunakan flow builder flow dan mengirimkan hasil response
+Menggunakan fungsi emit. Kemudian kita juga menggunakan Dispatcher IO pada flowOn. Karena ini merupakan proses mengambil
+data dari server
+ */

@@ -5,6 +5,7 @@ import com.candra.starterprojectaplikasi.core.data.TourismRepository
 import com.candra.starterprojectaplikasi.core.data.source.local.LocalDataSource
 import com.candra.starterprojectaplikasi.core.data.source.local.room.TourismDatabase
 import com.candra.starterprojectaplikasi.core.data.source.remote.RemoteDataSource
+import com.candra.starterprojectaplikasi.core.data.source.remote.network.ApiConfig
 import com.candra.starterprojectaplikasi.core.domain.usercase.TourismInteractor
 import com.candra.starterprojectaplikasi.core.domain.usercase.TourismUseCase
 import com.candra.starterprojectaplikasi.core.utils.AppExecutors
@@ -14,7 +15,7 @@ object Injection {
     fun provideRepository(context: Context): TourismRepository {
         val database = TourismDatabase.getInstance(context)
 
-        val remoteDataSource = RemoteDataSource.getInstance(JsonHelper(context))
+        val remoteDataSource = RemoteDataSource.getInstance(ApiConfig.provideApiService())
         val localDataSource = LocalDataSource.getInstance(database.tourismDao())
         val appExecutors = AppExecutors()
 
