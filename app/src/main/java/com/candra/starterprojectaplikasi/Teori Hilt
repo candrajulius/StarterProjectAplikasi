@@ -1,0 +1,179 @@
+Dagger Hilt
+Hilt merupakan library Jetpack terbaru yang direkomendasikan dalam dependency injection. Ia dibuat di atas Dagger yang sudah teruji dan sangat kokoh (robust). Bedanya yaitu langkah yang dilakukan lebih simpel dan dinilai lebih mudah dipelajari. Jadi dulu Dagger dikenal sebagai konsep yang cukup sulit dipelajari, selain itu proses ritual yang panjang membuat kurva belajar mempelajari Dagger ini lumayan tajam. Nah harapannya dengan adanya Hilt proses tersebut menjadi lebih mudah.
+
+
+Dependency
+Berikut ini adalah dependency yang perlu ditambahkan untuk menggunakan Dagger Hilt.
+
+Pada  build.gradle(project)
+
+buildscript {
+    ...
+    ext.hilt_version = '2.36'
+
+    dependencies {
+        ...
+        classpath 'com.google.dagger:hilt-android-gradle-plugin:$hilt_version'
+    }
+}
+Pada build.gradle(module: app)
+
+plugns {
+    ...
+    id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
+}
+...
+dependencies {
+    ...
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
+
+}
+Catatan:
+Saat ini Hilt masih dalam tahap beta, sehingga mungkin masih sering terjadi perubahan.
+
+
+
+Konsep Dasar
+Perbedaan dasar antara Dagger dan Hilt adalah Hilt sudah menyediakan component dan scope yang bisa langsung Anda gunakan. Berbeda dengan Dagger yang mengharuskan Anda membuatnya secara manual. Yang menarik yaitu Component ini sudah terintegrasi dengan lifecycle di dalam Android, sehingga Anda tak perlu mengaturnya secara manual. Berikut ini adalah hirarki dari beberapa Component beserta Scope yang bisa Anda gunakan:
+202105061412371b2f2d3f992bb77ddfec8c99bda5f813.png
+
+Catatan:
+Pastikan gunakan annotation yang sesuai pada diagram ini ya, misalnya jika Anda menggunakan ActivityComponent maka Anda hanya bisa menggunakan scope @ActivityScoped.
+
+Baik supaya lebih paham mari simak kode yang sama pada modul Dagger dan kita ubah dengan menggunakan Hilt sehingga hasilnya menjadi seperti ini:
+
+@Module
+@InstallIn(SingletonComponent::class)
+class AppModule {
+   @Singleton
+   @Provides
+   fun provideEngine(@ApplicationContext context: Context): Engine = Engine(context)
+}
+@HiltAndroidApp
+open class MyApplication : Application() {
+}
+@AndroidEntryPoint
+class MainActivity : AppCompatActivity() {
+
+   @Inject
+   lateinit var car: Car
+
+   override fun onCreate(savedInstanceState: Bundle?) {
+       super.onCreate(savedInstanceState)
+       setContentView(R.layout.activity_main)
+
+       car.start()
+   }
+}
+
+@Singleton
+class Car @Inject constructor(private val engine: Engine) {
+   fun start() {
+       engine.start()
+   }
+}
+
+class Engine(val context: Context) {
+   fun start() {
+       println(context.applicationContext.getString(R.string.engine_start))
+   }
+}
+Catatan:
+Anda juga dapat mencoba dan menjalankan kode di atas pada Android Studio, dengan syarat menambahkan library Dagger Hilt terlebih dahulu.
+
+
+Nah mari kita simak bagian bagian tersebut satu per satu.
+
+@Module dan @InstallIn
+@Module
+@InstallIn(SingletonComponent::class)
+class AppModule {
+    ...
+}
+Sama seperti Dagger, untuk memberitahu suatu kelas adalah Module Anda cukup menambahkan annotation @Module. Bedanya yaitu di sini terdapat anotasi @InstallIn untuk memasukkan module ini ke Component yang diinginkan. Berbeda dengan Dagger yang merupakan kebalikannya, yaitu Component menentukan Module apa saja yang dimasukkan.
+
+
+
+Context Injection dengan @ApplicationContext
+@Singleton
+@Provides
+fun provideEngine(@ApplicationContext context: Context): Engine = Engine(context)
+Jika pada Dagger Anda harus menggunakan @BindInstance dan memasukkannya dari luar, maka pada Hilt Anda cukup menggunakan annotation @ApplicationContext saja pada saat membutuhkan Context. Selain @ApplicationContext, qualifier yang lainnya yang dapat Anda pakai yaitu @ActivityContext.
+
+Kemudian fungsi untuk mensuplai Object masih sama dengan menggunakan @Provides. Selain itu juga bisa menggunakan @Binds untuk yang abstract. Selanjutnya perhatikan juga pada scope yang digunakan, karena Anda menggunakan SingletonComponent maka scope yang digunakan yaitu @Singleton.
+
+Selain itu Anda juga mensuplai melalui constructor Injection sama seperti pada Dagger dan tidak ada perbedaan dalam hal ini.
+
+
+
+Inject ke Application dengan @HiltAndroidApp
+Supaya Anda bisa menggunakan Hilt di semua kelas, Anda dapat membuat Custom Application untuk memanggil Hilt. Kelas ini akan dijadikan sebagai base Application dengan menambahkan name pada AndroidManifest.
+
+@HiltAndroidApp
+open class MyApplication : Application() {
+}
+Bedanya dengan Dagger yaitu Anda tidak perlu create component di sini karena component pada Hilt sudah disediakan. Anda cukup menambahkan anotasi @HiltAndroidApp untuk men-trigger Hilt men-generate kode untuk dependency yang didefinisikan.
+
+
+
+@AndroidEntryPoint
+@AndroidEntryPoint
+class MainActivity : AppCompatActivity() {
+
+   @Inject
+   lateinit var engine: Engine
+
+   override fun onCreate(savedInstanceState: Bundle?) {
+       super.onCreate(savedInstanceState)
+       setContentView(R.layout.activity_main)
+
+     val car = Car(engine)
+       car.start()
+   }
+}
+Berbeda dengan Dagger, Anda tak perlu memanggil Component yang ada di MyApplication untuk melakukan injection ke suatu class. Namun cukup dengan menambahkan anotasi @AndroidEntryPoint pada kelas yang ingin di-inject. Selain pada Activity, Anda juga dapat menambahkannya pada Fragment, View, Service, dan juga BroadcastReceiver.
+
+Yang perlu diperhatikan yaitu Anda jika menambahkan anotasi tersebut pada suatu class, maka Anda juga perlu menambahkan anotasi pada kelas yang menaunginya juga. Misalnya jika Anda menambahkan anotasi pada Fragment, maka kamu harus menambahkan anotasi pada Activity yang menggunakan Fragment tersebut juga.
+
+
+Integrasi Hilt dengan Jetpack
+Karena Hilt sudah terintegrasi dengan Jetpack Anda dapat meng-inject beberapa komponen dalam Jetpack dengan lebih mudah. Untuk saat ini komponen yang di-support yaitu ViewModel dan WorkManager.
+
+- Injection pada ViewModel
+Untuk melakaukan injection ViewModel, Anda bisa mem-provide-nya cukup hanya dengan menambahkan anotasi @HiltViewModel pada class dan @Inject pada constructor ViewModel seperti berikut:
+
+@HiltViewModel
+class HomeViewModel @Inject constructor(private val tourismUseCase: TourismUseCase) : ViewModel() {
+...
+}
+Kemudian pada activity/fragment cukup menambahkan properties delegation by viewModels untuk melakukan injection seperti berikut:
+
+@AndroidEntryPoint
+class HomeFragment : Fragment() {
+private val viewModel: HomeViewModel by viewModels()
+}
+Simpel bukan? Di sini Anda tidak perlu menggunakan ViewModelFactory lagi. Bahkan Anda juga tidak perlu membuat multi-bindings seperti yang ada di Dagger, seperti mulai dari membuat ViewModelKey sampai menggunakan IntoMap pada Module. Semua ini sudah diatur oleh Dagger Hilt. Mantap!
+
+
+- Injection pada WorkManager
+Sedangkan untuk Injection pada WorkManager dapat Anda lakukan dengan menggunakan anotasi @HiltWorker pada class dan @AssistedInject pada constructor. Selain itu juga anotasi @Assisted untuk masing-masing parameternya.
+
+@HiltWorker
+class ExampleWorker @AssistedInject constructor(
+@Assisted appContext: Context,
+@Assisted workerParams: WorkerParameters,
+workerDependency: WorkerDependency
+) : Worker(appContext, workerParams) { ... }
+Kasusnya hampir sama dengan ViewModel, di sini Anda tidak perlu membuat Worker Factory dan assisted inject secara manual lagi. Semuanya sudah disediakan oleh Hilt yang sudah terintegrasi dengan Jetpack ini.
+
+
+
+Selamat! Anda telah selangkah lebih maju untuk belajar menggunakan library Dagger Hilt untuk mempermudah proses Anda dalam membuat dependency injection. Seperti biasa kami menyarankan Anda mendalami lebih jauh tentang Hilt melalui tautan di bawah ini:
+
+Documentation Dagger Hilt
+
+Documentation Android : Dependency injection with Hilt
+
+Dagger Hilt Cheat sheet

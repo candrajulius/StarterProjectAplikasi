@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-android-extensions'
     id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
 }
 
 android {
@@ -83,12 +84,13 @@ dependencies {
     def koin_version = "3.2.0"
     implementation "io.insert-koin:koin-android:$koin_version"
 
-    def dagger_version = "2.42"
-    implementation "com.google.dagger:dagger:$dagger_version"
-    kapt "com.google.dagger:dagger-compiler:$dagger_version"
 
     def activity_ktx_version = "1.1.0"
     def fragment_ktx_version = "1.2.5"
     implementation "androidx.activity:activity-ktx:$activity_ktx_version"
     implementation "androidx.fragment:fragment-ktx:$fragment_ktx_version"
+
+    // Dagger Hilt
+    implementation("com.google.dagger:hilt-android:2.41")
+    kapt("com.google.dagger:hilt-android-compiler:2.39.1")
 }
