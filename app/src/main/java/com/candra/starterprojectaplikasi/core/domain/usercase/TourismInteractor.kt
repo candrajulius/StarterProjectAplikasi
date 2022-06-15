@@ -5,8 +5,9 @@ import com.candra.starterprojectaplikasi.core.data.Resource
 import com.candra.starterprojectaplikasi.core.domain.model.Tourism
 import com.candra.starterprojectaplikasi.core.domain.repository.ITourismRepository
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class TourismInteractor(
+class TourismInteractor @Inject constructor(
     private val tourismRepository: ITourismRepository
 ): TourismUseCase{
     override fun getAllTourism(): Flow<Resource<List<Tourism>>> {

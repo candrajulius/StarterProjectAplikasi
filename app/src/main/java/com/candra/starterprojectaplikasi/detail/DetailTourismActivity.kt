@@ -1,13 +1,17 @@
 package com.candra.starterprojectaplikasi.detail
 
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.candra.starterprojectaplikasi.R
+import com.candra.starterprojectaplikasi.core.di.MyApplication
 import com.candra.starterprojectaplikasi.core.domain.model.Tourism
+import com.candra.starterprojectaplikasi.core.ui.ViewModelFactory
 import com.candra.starterprojectaplikasi.databinding.ActivityDetailTourismBinding
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import javax.inject.Inject
 
 class DetailTourismActivity : AppCompatActivity() {
 
@@ -15,10 +19,15 @@ class DetailTourismActivity : AppCompatActivity() {
         const val EXTRA_DATA = "extra_data"
     }
 
-    private val detailTourismViewModel: DetailTourismViewModel by viewModel()
+    @Inject
+    lateinit var factory: ViewModelFactory
+
+    private val detailTourismViewModel: DetailTourismViewModel by viewModels { factory }
     private lateinit var binding: ActivityDetailTourismBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Proses injection pada activity
+        (application as MyApplication).appComponent.inject(this)
         super.onCreate(savedInstanceState)
         binding = ActivityDetailTourismBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -58,3 +67,20 @@ class DetailTourismActivity : AppCompatActivity() {
         }
     }
 }
+
+/*
+Kesimpulan
+Constructor Injection vs @Provides vs @Binds
+Walaupun Anda bisa menggunakan @Provides pada setiap Injection, namun secara best-practice lebih baik Anda menggunakan Constructor Injection bilamana bisa. Seperti yang Anda lihat pada diagram di atas, hampir semuanya menggunakan Constructor Injection.
+
+Perhatikan untuk Objek yang paling bawah (ujung) biasanya memang menggunakan @Provides karena memang sudah tidak ada constructor lagi kecuali Context. Untuk itu Anda perlu membuat module-nya, yaitu StorageModule dan NetworkModule.
+
+Lalu mengapa untuk TourismUseCase dan ITourismRepository perlu menggunakan @Binds?
+Kita tahu bahwa ITourismRepository adalah interface, artinya ia membutuhkan concrete implementation, dalam hal ini yaitu TourismRepository. Oleh karena itulah kita perlu mendefinisikannya di sini, caranya yaitu dengan membuat abstract method dengan parameter berupa implementation class (TourismRepository) dan kembalian berupa interface (ITourismRepository).
+
+Perhatikan juga karena fungsinya abstract maka class-nya juga harus abstract, karena itulah biasanya module untuk @Binds ini disendirikan. Jika Anda ingin tetap menggabungkannya dengan @Provides Anda harus membuat fungsi yang lain menjadi static dengan menambahkan annotation @JvmStatic pada Kotlin.
+
+ Activity inject Dagger di dalam OnCreate sebelum keyword super.
+
+Fragment inject Dagger di dalam OnAttach setelah keyword super.
+ */

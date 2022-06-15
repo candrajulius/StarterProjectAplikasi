@@ -1,6 +1,5 @@
 package com.candra.starterprojectaplikasi.core.data.source.local.room
 
-import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.candra.starterprojectaplikasi.core.data.source.local.entity.TourismEntity
 import kotlinx.coroutines.flow.Flow

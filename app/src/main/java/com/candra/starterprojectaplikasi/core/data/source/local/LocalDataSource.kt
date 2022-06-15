@@ -4,8 +4,11 @@ import androidx.lifecycle.LiveData
 import com.candra.starterprojectaplikasi.core.data.source.local.entity.TourismEntity
 import com.candra.starterprojectaplikasi.core.data.source.local.room.TourismDao
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class LocalDataSource(private val tourismDao: TourismDao) {
+@Singleton
+class LocalDataSource @Inject constructor(private val tourismDao: TourismDao) {
 
 
     fun getAllTourism(): Flow<List<TourismEntity>> = tourismDao.getAllTourism()

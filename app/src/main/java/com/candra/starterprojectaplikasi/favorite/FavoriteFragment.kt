@@ -1,24 +1,39 @@
 package com.candra.starterprojectaplikasi.favorite
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.candra.starterprojectaplikasi.core.di.MyApplication
 import com.candra.starterprojectaplikasi.core.ui.TourismAdapter
+import com.candra.starterprojectaplikasi.core.ui.ViewModelFactory
 import com.candra.starterprojectaplikasi.databinding.FragmentFavoriteBinding
 import com.candra.starterprojectaplikasi.detail.DetailTourismActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import javax.inject.Inject
 
 class FavoriteFragment : Fragment() {
 
-    private val favoriteViewModel: FavoriteViewModel by viewModel()
+
+    @Inject
+    lateinit var factory: ViewModelFactory
+
+    private val favoriteViewModel: FavoriteViewModel by viewModels{ factory }
 
     private var _binding: FragmentFavoriteBinding? = null
     private val binding get() = _binding!!
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        // Proses injection pada fragment
+        (requireActivity().application as MyApplication).appComponent.inject(this)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -62,3 +77,9 @@ class FavoriteFragment : Fragment() {
         _binding = null
     }
 }
+/*
+Kesimpulan
+Activity inject Dagger di dalam OnCreate sebelum keyword super.
+
+Fragment inject Dagger di dalam OnAttach setelah keyword super.
+ */
