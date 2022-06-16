@@ -1,10 +1,8 @@
 package com.candra.starterprojectaplikasi.detail
 
 import androidx.lifecycle.ViewModel
-import com.candra.starterprojectaplikasi.core.data.TourismRepository
-import com.candra.starterprojectaplikasi.core.data.source.local.entity.TourismEntity
-import com.candra.starterprojectaplikasi.core.domain.model.Tourism
-import com.candra.starterprojectaplikasi.core.domain.usercase.TourismUseCase
+import com.candra.core.domain.model.Tourism
+import com.candra.core.domain.usercase.TourismUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

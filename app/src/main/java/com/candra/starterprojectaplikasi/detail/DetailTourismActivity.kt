@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.candra.starterprojectaplikasi.R
-import com.candra.starterprojectaplikasi.core.domain.model.Tourism
+import com.candra.core.domain.model.Tourism
 import com.candra.starterprojectaplikasi.databinding.ActivityDetailTourismBinding
 import dagger.hilt.android.AndroidEntryPoint
 

@@ -2,7 +2,7 @@ package com.candra.starterprojectaplikasi.favorite
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
-import com.candra.starterprojectaplikasi.core.domain.usercase.TourismUseCase
+import com.candra.core.domain.usercase.TourismUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

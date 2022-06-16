@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.candra.starterprojectaplikasi.core.ui.TourismAdapter
+import com.candra.core.ui.TourismAdapter
 import com.candra.starterprojectaplikasi.databinding.FragmentFavoriteBinding
 import com.candra.starterprojectaplikasi.detail.DetailTourismActivity
 import dagger.hilt.android.AndroidEntryPoint

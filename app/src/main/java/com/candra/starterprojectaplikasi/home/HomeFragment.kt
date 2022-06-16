@@ -9,9 +9,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.candra.starterprojectaplikasi.R
-import com.candra.starterprojectaplikasi.core.data.Resource
-import com.candra.starterprojectaplikasi.core.domain.model.Tourism
-import com.candra.starterprojectaplikasi.core.ui.TourismAdapter
+import com.candra.core.data.Resource
+import com.candra.core.domain.model.Tourism
+import com.candra.core.ui.TourismAdapter
 import com.candra.starterprojectaplikasi.databinding.FragmentHomeBinding
 import com.candra.starterprojectaplikasi.detail.DetailTourismActivity
 import dagger.hilt.android.AndroidEntryPoint
@@ -55,12 +55,12 @@ class HomeFragment : Fragment() {
             homeViewModel.tourism.observe(viewLifecycleOwner) { tourism ->
                 if (tourism != null) {
                     when (tourism) {
-                        is Resource.Loading<*> -> binding.progressBar.visibility = View.VISIBLE
-                        is Resource.Success<*> -> {
+                        is com.candra.core.data.Resource.Loading<*> -> binding.progressBar.visibility = View.VISIBLE
+                        is com.candra.core.data.Resource.Success<*> -> {
                             binding.progressBar.visibility = View.GONE
                             tourismAdapter.setData(tourism.data as List<Tourism>?)
                         }
-                        is Resource.Error<*> -> {
+                        is com.candra.core.data.Resource.Error<*> -> {
                             binding.progressBar.visibility = View.GONE
                             binding.viewError.root.visibility = View.VISIBLE
                             binding.viewError.tvError.text =
