@@ -1,6 +1,5 @@
 package com.candra.starterprojectaplikasi.core.domain.usercase
 
-import androidx.lifecycle.LiveData
 import com.candra.starterprojectaplikasi.core.data.Resource
 import com.candra.starterprojectaplikasi.core.domain.model.Tourism
 import com.candra.starterprojectaplikasi.core.domain.repository.ITourismRepository

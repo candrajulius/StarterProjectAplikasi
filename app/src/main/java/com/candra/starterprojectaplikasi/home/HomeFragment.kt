@@ -21,6 +21,9 @@ import dagger.hilt.android.AndroidEntryPoint
 class HomeFragment : Fragment() {
 
 
+    /*
+     Lalu untuk menggunakannya Anda cukup menggunakan property delegate dari Activity KTX yaitu by viewModels()
+     */
     private val homeViewModel: HomeViewModel by viewModels()
 
     private var _binding: FragmentHomeBinding? = null

@@ -24,3 +24,9 @@ Namun mengapa kita menggunakan @Binds? Hal ini karena dari segi performa ia lebi
 
  Dengan menggunakan includes ini Anda bisa menggunakan komponen yang ada pada NetworkModule dan DatabaseModule pada RepositoryModule. Selain itu, ia juga berfungsi supaya pembagian Module menjadi lebih rapi.
  */
+
+// kesimpulan dagger hilt
+/*
+Di sini RepositoryModule masuk ke SingletonComponent karena ia merupakan Component dengan hirarki tertinggi yang bisa digunakan di mana saja.
+
+ */

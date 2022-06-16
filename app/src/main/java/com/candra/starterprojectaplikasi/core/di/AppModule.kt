@@ -15,3 +15,10 @@ abstract class AppModule {
     @ViewModelScoped
     abstract fun provideTourismUseCase(tourismInteractor: TourismInteractor): TourismUseCase
 }
+
+// Kesimpulan
+/*
+ Hilt adalah kebalikannya, Module yang menentukan masuk ke Component mana dengan menggunakan @InstallIn
+
+ Hal ini karena Anda menggunakan Module di level ViewModel saja, sehingga yang digunakan adalah ViewModelComponent yang sudah disediakan Hilt. Hal lain yang sudah disediakan Hilt yaitu scope. Jika sebelumnya Anda membuat AppScope secara manual, maka saat ini Anda bisa menggunakan scope yang sudah disediakan, yaitu ViewModelScoped yang sesuai dengan Component-nya.
+ */
