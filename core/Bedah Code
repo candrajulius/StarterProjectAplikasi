@@ -1,0 +1,13 @@
+Shared Dependency
+Untuk berbagi dependency di banyak module sekaligus, Anda membuat file shared_depencies.gradle. Kemudian untuk memanggil file tersebut Anda cukup menggunakan kode seperti berikut pada build.gradle masing-masing module.
+// Contoh Code
+apply from: '../shared_dependencies.gradle'
+
+Implementation vs api
+implementation "androidx.room:room-ktx:$room_version"
+api "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
+
+Apa perbedaan antara implementation dan api?
+implementation digunakan jika library ini digunakan oleh module core saja.
+
+api digunakan jika library ini juga digunakan oleh module lain yang depend ke module core.
